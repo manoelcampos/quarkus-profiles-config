@@ -1,0 +1,5 @@
+:source-highlighter: highlightjs
+:numbered:
+
+= Steps to produce the issue
+
