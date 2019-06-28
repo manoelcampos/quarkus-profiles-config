@@ -1,4 +1,7 @@
-greeting.message = Hello Quarkus from default configuration file at src/main/resources/
+# Configuration file to be copied to target/config when executing run.sh,
+# to check if the app is loading that external file
+
+greeting.message = Hello Quarkus from external configuration file at target/config/
 
 # configure your datasource
 #quarkus.datasource.url  = jdbc:h2:./classes/META-INF/resources/h2_db_dev
@@ -8,4 +11,3 @@ quarkus.datasource.driver = org.h2.Driver
 #quarkus.hibernate-orm.database.generation  = update
 
 quarkus.http.port  = 8080
-

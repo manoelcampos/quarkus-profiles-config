@@ -1,5 +1,47 @@
 :source-highlighter: highlightjs
 :numbered:
 
-= Steps to produce the issue
+= Introduction
 
+The app has two H2 database files inside the link:src/main/resources/META-INF/resources/[resources] dir:
+`h2_db_dev.mv.db` and `h2_db_prod.mv.db`.
+They contain just a `User` table with different data to make it clear
+that the app is using the dev or prod database.
+
+In fact, when a `config/application.properties` is created inside the target dir,
+the app automatically uses it, despite it shows the message
+**"WARN  [com.arj.ats.common] (main) ARJUNA048002: Could not find configuration file, URL was: null"**
+when starting up.
+
+Oddly, the warning just appears when adding the `quarkus-hibernate-orm` dependency.
+The branch https://github.com/manoelcampos/quarkus-profiles-issue/tree/config-file-working[config-file-working],
+which doesn't use a database, doesn't have this issue.
+
+The link:src/main/resources/application.properties[application.properties]
+defines a `quarkus.datasource.url` property for the `dev` and `prod` profiles.
+
+However, independently of how you define the profile variable, it doesn't work.
+It ignores the dev and prod variables and requires the `quarkus.datasource.url` to be defined.
+Without that variable, it issues the warning
+**"WARN  [io.qua.agr.run.AbstractDataSourceProducer] (executor-thread-1) Datasource <default> not started: driver and/or url are not defined."**
+before throwing a NullPointerException.
+
+== Reproducing the issue
+
+Build the app:
+
+[source, bash]
+----
+./mvnw clean package
+----
+
+To enable the app to find the databases, you have to enter the target dir
+and then run the jar, defining the profile you want to use,
+in one of the following ways:
+
+- `java -DQUARKUS_PROFILE=prod -jar quarkus-app-runner.jar`
+- `export QUARKUS_PROFILE=prod; java -jar quarkus-app-runner.jar`
+
+Then you can try to access the REST endpoint at http://localhost:8080/api/user/1
+
+If it worked, changing the profile would return different data for that same URI.
