@@ -1,47 +1,77 @@
 :source-highlighter: highlightjs
 :numbered:
+ifdef::env-github[]
+:outfilesuffix: .adoc
+:caution-caption: :fire:
+:important-caption: :exclamation:
+:note-caption: :paperclip:
+:tip-caption: :bulb:
+:warning-caption: :warning:
+endif::[]
+
 
 = Introduction
 
-The app has two H2 database files inside the link:src/main/resources/META-INF/resources/[resources] dir:
-`h2_db_dev.mv.db` and `h2_db_prod.mv.db`.
+A sample project providing REST endpoints using JAX-RS, CDI, JPA, JTA 
+with the https://quarkus.io[Quarkus] framework, showing how to define
+properties for different profiles, such as development (dev) 
+and production (prod).
+
+The app has two http://h2database.com[H2 database] files inside the link:src/main/resources/META-INF/resources/[resources] dir:
+
+- `h2_db_dev.mv.db` and 
+- `h2_db_prod.mv.db`.
+
 They contain just a `User` table with different data to make it clear
 that the app is using the dev or prod database.
 
-In fact, when a `config/application.properties` is created inside the target dir,
-the app automatically uses it, despite it shows the message
-**"WARN  [com.arj.ats.common] (main) ARJUNA048002: Could not find configuration file, URL was: null"**
-when starting up.
-
-Oddly, the warning just appears when adding the `quarkus-hibernate-orm` dependency.
-The branch https://github.com/manoelcampos/quarkus-profiles-issue/tree/config-file-working[config-file-working],
-which doesn't use a database, doesn't have this issue.
-
 The link:src/main/resources/application.properties[application.properties]
-defines a `quarkus.datasource.url` property for the `dev` and `prod` profiles.
+defines a `%{profile}.quarkus.datasource.url` property for the `dev` and `prod` profiles.
 
-However, independently of how you define the profile variable, it doesn't work.
-It ignores the dev and prod variables and requires the `quarkus.datasource.url` to be defined.
-Without that variable, it issues the warning
-**"WARN  [io.qua.agr.run.AbstractDataSourceProducer] (executor-thread-1) Datasource <default> not started: driver and/or url are not defined."**
-before throwing a NullPointerException.
-
-== Reproducing the issue
-
-Build the app:
+== Building the app
 
 [source, bash]
 ----
 ./mvnw clean package
 ----
 
-To enable the app to find the databases, you have to enter the target dir
-and then run the jar, defining the profile you want to use,
-in one of the following ways:
+== Running the app in the development environment
 
-- `java -DQUARKUS_PROFILE=prod -jar quarkus-app-runner.jar`
-- `export QUARKUS_PROFILE=prod; java -jar quarkus-app-runner.jar`
+If you want to run the app in the development environement,
+in order to use hot deployment, you can execute
 
-Then you can try to access the REST endpoint at http://localhost:8080/api/user/1
+[source, bash]
+----
+./mvnw compile quarkus:dev
+----
 
-If it worked, changing the profile would return different data for that same URI.
+That will enable the `dev` profile, so that the development database will be used.
+You can access the application at http://localhost:8080/, which provides links to the REST endpoints.
+Acessing a link such as http://localhost:8080/api/user/1
+will return an user from the development database.
+
+IMPORTANT: Running the app this way, you may have to set the absolute path of the database in the `dev.quarkus.datasource.url` attribute of the link:src/main/resources/application.properties[application.properties] file.
+
+If you just want to use the development or other environement you may have created
+inside the application.properties, you can run the app in one of the following ways:
+
+- Using a system variable: `java -Dquarkus-profile=dev -jar target/quarkus-app-runner.jar`
+- Using an environment variable: `QUARKUS_PROFILE=dev java -jar target/quarkus-app-runner.jar`
+
+NOTE: Realize the format of the system and environement variables name is different.
+
+== Running the app in the production environment
+
+Running the app with the following command will automatically define the profile as `prod`,
+so that the production database will be used.
+
+[source, bash]
+----
+java -jar quarkus-app-runner.jar
+----
+
+If you have other profiles than `dev` and `prod` you can set the profile you want to activate with the commands shown at the previous section.
+
+= References
+
+- https://quarkus.io/guides/application-configuration-guide
